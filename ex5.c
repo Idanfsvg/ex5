@@ -71,6 +71,56 @@ void printEpisode();
 void printShow();
 void printArray();
 
+int main() {
+    int choice;
+    do {
+        mainMenu();
+        scanf("%d", &choice);
+        getchar();
+        switch (choice) {
+            case 1: addMenu(); break;
+            case 2: deleteMenu(); break;
+            case 3: printMenuSub(); break;
+            case 4: freeAll(); break;
+        }
+    } while (choice != 4);
+    return 0;
+}
+
+/*
+        ---MISC---
+*/
+char *getString() {
+    char ch = '\0';
+    char *tempName = NULL;
+    int count = 0;
+
+    while (ch != '\n') {
+        scanf("%c", &ch);
+        tempName = (char*)nullCheck(tempName, (++count)*sizeof(char));
+        tempName[count - 1] = ch;
+    }
+
+    // Replaces \n
+    tempName[count - 1] = '\0';
+
+    if (tempName == NULL) {
+        tempName[FIRST_CELL] = '\0';
+    }
+    
+    return tempName;
+}
+
+void *nullCheck(void *origin, int size) {
+    void *temp = realloc(origin, size);
+    if (temp == NULL) {
+        printf("\n---FAILED IN ALLOCATING MEMORY---\n");
+        freeAll();
+        exit(1);
+    }
+    return temp;
+}
+
 
 /*
         ---MENU FUNCS---
@@ -126,54 +176,6 @@ void mainMenu() {
     printf("2. Delete\n");
     printf("3. Print\n");
     printf("4. Exit\n");
-}
-
-int main() {
-    int choice;
-    do {
-        mainMenu();
-        scanf("%d", &choice);
-        getchar();
-        switch (choice) {
-            case 1: addMenu(); break;
-            case 2: deleteMenu(); break;
-            case 3: printMenuSub(); break;
-            case 4: freeAll(); break;
-        }
-    } while (choice != 4);
-    return 0;
-}
-
-
-char *getString() {
-    char ch = '\0';
-    char *tempName = NULL;
-    int count = 0;
-
-    while (ch != '\n') {
-        scanf("%c", &ch);
-        tempName = (char*)nullCheck(tempName, (++count)*sizeof(char));
-        tempName[count - 1] = ch;
-    }
-
-    // Replaces \n
-    tempName[count - 1] = '\0';
-
-    if (tempName == NULL) {
-        tempName[FIRST_CELL] = '\0';
-    }
-    
-    return tempName;
-}
-
-void *nullCheck(void *origin, int size) {
-    void *temp = realloc(origin, size);
-    if (temp == NULL) {
-        printf("\n---FAILED IN ALLOCATING MEMORY---\n");
-        freeAll();
-        exit(1);
-    }
-    return temp;
 }
 
 
@@ -266,7 +268,7 @@ void addSeason() {
     tempName = getString();
     
     if (findSeason(show, tempName) != NULL) {
-        printf ("Season already exists.");
+        printf ("Season already exists.\n");
         free(tempName);
         return;
     }
@@ -295,7 +297,7 @@ void addSeason() {
         temp = temp->next;
     }
     s->next = temp->next;
-    temp->next = s->next;
+    temp->next = s;
 }
 
 void addEpisode() {
@@ -323,7 +325,7 @@ Season *findSeason(TVShow *show, char *name) {
     }
 
     Season *s = show->seasons;
-    while (s->name != name) {
+    while (strcmp(s->name, name)) {
         if (s->next == NULL) {
             return NULL;
         }
@@ -338,7 +340,7 @@ Episode *findEpisode(Season *season, char *name) {
     }
 
     Episode *e = season->episodes;
-    while (e->name != name) {
+    while (strcmp(e->name, name)) {
         if (e->next == NULL) {
             return NULL;
         }
@@ -358,7 +360,6 @@ void deleteShow() {
     for (int i = 0; i < dbSize; i++) {
         for (int j = 0; j < dbSize; j++) {
             if (database[i][j] != NULL) {
-                //printf("\n%s\n%s\n", database[i][j]->name, tempName);
                 if (!strcmp(database[i][j]->name, tempName)) {
                     freeShow(database[i][j]);
                     database[i][j] = NULL;
@@ -373,11 +374,42 @@ void deleteShow() {
 }
 
 void deleteSeason() {
+    printf("Enter the name of the show:\n");
+    char *tempName = getString();
+    TVShow *show = findShow(tempName);
 
+    if (show == NULL) {
+        printf("Show not found\n");
+        free(tempName);
+        return;
+    }
+    printf("Enter the name of the season:\n");
+    tempName = getString();
+    Season *s = findSeason(show, tempName);
+    free(tempName);
+
+    if (s == NULL) {
+        printf ("Season not found.\n");
+        return;
+    }
+
+    if (show->seasons == s) {
+        show->seasons = s->next;
+    } else {
+        Season *temp = show->seasons;
+        for (int i = 0; ; i++) {
+            if (temp->next == s) {
+                break;
+            }
+            temp = temp->next;
+        }
+        temp->next = s->next;
+    }
+    freeSeason(s);
 }
 
 void deleteEpisode() {
-
+    
 }
 
 
@@ -433,11 +465,6 @@ void freeShow(TVShow *show) {
 }
 
 void freeSeason(Season *s) {
-    //NOT DONE
-    if (s == NULL) {
-        return;
-    }
-    
     if (s->episodes == NULL) {
         free(s->name);
         free(s);
@@ -451,6 +478,7 @@ void freeSeason(Season *s) {
         return;
     }
 
+    // EASIER WAY TO DO IT
     Episode *temp1 = s->episodes->next;
     Episode *temp2 = s->episodes;
 
@@ -463,8 +491,8 @@ void freeSeason(Season *s) {
     freeSeason(s);
 }
 
+//NOT DONE
 void freeEpisode(Episode *e) {
-    //NOT DONE
     if (e == NULL) {
         return;
     }
