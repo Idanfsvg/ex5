@@ -59,7 +59,7 @@ void printMenuSub();
 void mainMenu();
 
 void addShow();
-void insertShow(int, int, void*);
+void insertShow(int, int, TVShow*);
 void addSeason();
 void addEpisode();
 
@@ -88,7 +88,7 @@ int main() {
 }
 
 /*
-        ---MISC---
+        ---MISC---                                              WORKS
 */
 char *getString() {
     char ch = '\0';
@@ -119,6 +119,10 @@ void *nullCheck(void *origin, int size) {
         exit(1);
     }
     return temp;
+}
+
+int validLength(char *s) {
+    
 }
 
 
@@ -180,8 +184,9 @@ void mainMenu() {
 
 
 /*
-        ---ADD FUNCS---
+        ---ADD FUNCS---                                     NOT TESTED
 */
+//WORKS
 void addShow() {
     // Part of the sorting algorithm
     int row, col = UNINITIALIZED;
@@ -229,8 +234,8 @@ void addShow() {
 
     //        SOMETHING NOT WORKING WITH STRCMP ON LINUX SERVER ONLY WHEN RUN WITH .TXT
 }
-
-void insertShow(int row, int col, void *choice) {
+//WORKS
+void insertShow(int row, int col, TVShow *choice) {
     for (int i = 0; i < dbSize; i++) {
         for (int j = 0; j < dbSize; j++) {
             if (database[i][j] == NULL) {
@@ -252,7 +257,7 @@ void insertShow(int row, int col, void *choice) {
         }
     }
 }
-
+//WORKS
 void addSeason() {
     printf("Enter the name of the show:\n");
     char *tempName = getString();
@@ -301,13 +306,51 @@ void addSeason() {
 }
 
 void addEpisode() {
-    
+    printf("Enter the name of the show:\n");
+    char *tempName = getString();
+    TVShow *show = findShow(tempName);
+
+    if (show == NULL) {
+        printf("Show not found\n");
+        free(tempName);
+        return;
+    }
+
+    printf("Enter the name of the season:\n");
+    tempName = getString();
+    Season *s = findSeason(show, tempName);
+    free(tempName);
+
+    if (s == NULL) {
+        printf ("Season not found.\n");
+        free(tempName);
+        return;
+    }
+
+    printf("Enter the name of the episode:\n");
+    tempName = getString();
+
+    if (findEpisode(s, tempName) != NULL) {
+        printf ("Episode already exists.\n");
+        free(tempName);
+        return;
+    }
+
+    Episode *e = NULL;
+    e = (Episode*)nullCheck(e, sizeof(Episode));
+    e->length = NULL;
+    e->name = tempName;
+    e->next = NULL;
+
+    printf("Enter the length (xx:xx:xx):\n");
+
 }
 
 
 /*
-        ---FIND FUNCS---
+        ---FIND FUNCS---                                    NOT TESTED
 */
+//WORKS
 TVShow *findShow(char *name) {
     for (int i = 0; i < dbSize; i++) {
         for (int j = 0; j < dbSize; j++) {
@@ -318,7 +361,7 @@ TVShow *findShow(char *name) {
     }
     return NULL;
 }
-
+//WORKS
 Season *findSeason(TVShow *show, char *name) {
     if (show->seasons == NULL) {
         return NULL;
@@ -351,8 +394,9 @@ Episode *findEpisode(Season *season, char *name) {
 
 
 /*
-        ---DELETE FUNCS---
+        ---DELETE FUNCS---                                  NOT TESTED
 */
+//WORKS
 void deleteShow() {
     printf("Enter the name of the show:\n");
     char *tempName = getString();
@@ -397,7 +441,7 @@ void deleteSeason() {
         show->seasons = s->next;
     } else {
         Season *temp = show->seasons;
-        for (int i = 0; ; i++) {
+        while (1) {
             if (temp->next == s) {
                 break;
             }
@@ -409,12 +453,54 @@ void deleteSeason() {
 }
 
 void deleteEpisode() {
-    
+    printf("Enter the name of the show:\n");
+    char *tempName = getString();
+    TVShow *show = findShow(tempName);
+
+    if (show == NULL) {
+        printf("Show not found\n");
+        free(tempName);
+        return;
+    }
+
+    printf("Enter the name of the season:\n");
+    tempName = getString();
+    Season *s = findSeason(show, tempName);
+
+    if (s == NULL) {
+        printf ("Season not found.\n");
+        free(tempName);
+        return;
+    }
+
+    printf("Enter the name of the episode:\n");
+    tempName = getString();
+    Episode *e = findEpisode(s, tempName);
+    free(tempName);
+
+    if (e == NULL) {
+        printf ("Episode not found.\n");
+        return;
+    }
+
+    if (s->episodes == e) {
+        s->episodes = e->next;
+    } else {
+        Season *temp = s->episodes;
+        while (1) {
+            if (temp->next == e) {
+                break;
+            }
+            temp = temp->next;
+        }
+        temp->next = e->next;
+    }
+    freeEpisode(e);
 }
 
 
 /*
-        ---FREE FUNCS---
+        ---FREE FUNCS---                                    NOT TESTED
 */
 void freeAll() {
     if (database == NULL) {
@@ -435,32 +521,20 @@ void freeAll() {
 }
 
 void freeShow(TVShow *show) {
-    if (show == NULL) {
-        return;
-    }
-    
     if (show->seasons == NULL) {
         free(show->name);
         free(show);
         return;
-    }
-
-    if (show->seasons->next == NULL) {
+    } else if (show->seasons->next == NULL) {
         freeSeason(show->seasons);
         free(show->name);
         free(show);
         return;
     }
-
-    Season *temp1 = show->seasons->next;
-    Season *temp2 = show->seasons;
-
-    while (temp1->next != NULL) {
-        temp2 = temp1;
-        temp1 = temp1->next;
-    }
-    freeSeason(temp1);
-    temp2->next = NULL;
+    
+    Season *temp = show->seasons->next;
+    show->seasons = temp->next;
+    freeSeason(temp);
     freeShow(show);
 }
 
@@ -469,34 +543,20 @@ void freeSeason(Season *s) {
         free(s->name);
         free(s);
         return;
-    }
-    
-    if (s->episodes->next == NULL) {
+    } else if (s->episodes->next == NULL) {
         freeEpisode(s->episodes);
         free(s->name);
         free(s);
         return;
     }
 
-    // EASIER WAY TO DO IT
-    Episode *temp1 = s->episodes->next;
-    Episode *temp2 = s->episodes;
-
-    while (temp1->next != NULL) {
-        temp2 = temp1;
-        temp1 = temp1->next;
-    }
-    freeEpisode(temp1);
-    temp2->next = NULL;
+    Episode *temp = s->episodes->next;
+    s->episodes->next = temp->next;
+    freeEpisode(temp);
     freeSeason(s);
 }
 
-//NOT DONE
 void freeEpisode(Episode *e) {
-    if (e == NULL) {
-        return;
-    }
-    
     free(e->name);
     free(e->length);
     free(e);
@@ -505,7 +565,7 @@ void freeEpisode(Episode *e) {
 
 
 /*
-        ---EXPAND AND SHRINK FUNCS---
+        ---EXPAND AND SHRINK FUNCS---                           WORKS
 */
 void expandDB() {
     if (database == NULL) {
@@ -579,7 +639,7 @@ void shrinkDB(int lim) {
 
 
 /*
-        ---SORT AND COUNT FUNCS---
+        ---SORT AND COUNT FUNCS---                              WORKS
 */
 void sortDB() {
     if (!isDBSorted()) {
@@ -637,7 +697,7 @@ int countShows() {
 
 
 /*
-        ---PRINT FUNCS---
+        ---PRINT FUNCS---                                   NOT TESTED
 */
 void printEpisode() {
     printf("Enter the name of the show:\n");
@@ -696,7 +756,7 @@ void printShow() {
         s = s->next;
     }
 }
-
+//WORKS
 void printArray() {
     for (int i = 0; i < dbSize; i++) {
         for (int j = 0; j < dbSize; j++) {
@@ -709,14 +769,3 @@ void printArray() {
         printf("\n");
     }
 }
-
-
-
-
-/*
-for (int i = 0; i < dbSize; i++) {
-    for (int j = 0; j < dbSize; j++) {
-        
-    }
-}
-*/
