@@ -10,6 +10,9 @@
 #define FIRST_CELL 0
 #define UNINITIALIZED -1
 
+#define EP_LENGTH 8
+#define TIME_FORMAT 3
+
 typedef struct Episode {
     char *name;
     char *length;
@@ -92,23 +95,23 @@ int main() {
 */
 char *getString() {
     char ch = '\0';
-    char *tempName = NULL;
+    char *temp = NULL;
     int count = 0;
 
     while (ch != '\n') {
         scanf("%c", &ch);
-        tempName = (char*)nullCheck(tempName, (++count)*sizeof(char));
-        tempName[count - 1] = ch;
+        temp = (char*)nullCheck(temp, (++count)*sizeof(char));
+        temp[count - 1] = ch;
     }
 
     // Replaces \n
-    tempName[count - 1] = '\0';
+    temp[count - 1] = '\0';
 
-    if (tempName == NULL) {
-        tempName[FIRST_CELL] = '\0';
+    if (temp == NULL) {
+        temp[FIRST_CELL] = '\0';
     }
     
-    return tempName;
+    return temp;
 }
 
 void *nullCheck(void *origin, int size) {
@@ -122,7 +125,19 @@ void *nullCheck(void *origin, int size) {
 }
 
 int validLength(char *s) {
-    
+    int ascii;
+    for (int i = 0; i < EP_LENGTH; i++) {
+        ascii = s[i];
+        if (i%TIME_FORMAT == TIME_FORMAT - 1) {
+            if (!(s[i] == ":")) {
+                return 0;
+            }
+        }else if (i < TIME_FORMAT - 1) {
+            if ((s[i] - '0' )) {
+                /* code */
+            }
+        }
+    }
 }
 
 
@@ -307,43 +322,69 @@ void addSeason() {
 
 void addEpisode() {
     printf("Enter the name of the show:\n");
-    char *tempName = getString();
-    TVShow *show = findShow(tempName);
+    char *temp = getString();
+    TVShow *show = findShow(temp);
 
     if (show == NULL) {
         printf("Show not found\n");
-        free(tempName);
+        free(temp);
         return;
     }
 
     printf("Enter the name of the season:\n");
-    tempName = getString();
-    Season *s = findSeason(show, tempName);
-    free(tempName);
+    temp = getString();
+    Season *s = findSeason(show, temp);
+    free(temp);
 
     if (s == NULL) {
         printf ("Season not found.\n");
-        free(tempName);
+        free(temp);
         return;
     }
 
     printf("Enter the name of the episode:\n");
-    tempName = getString();
+    temp = getString();
 
-    if (findEpisode(s, tempName) != NULL) {
+    if (findEpisode(s, temp) != NULL) {
         printf ("Episode already exists.\n");
-        free(tempName);
+        free(temp);
         return;
     }
 
     Episode *e = NULL;
     e = (Episode*)nullCheck(e, sizeof(Episode));
     e->length = NULL;
-    e->name = tempName;
+    e->name = temp;
     e->next = NULL;
 
     printf("Enter the length (xx:xx:xx):\n");
+    temp = getString();
 
+    while (!validLength(temp)) {
+        printf("Invalid length, enter again:\n");
+        temp = getString();
+    }
+    free(temp);
+
+    printf("Enter the position:\n");
+    int pos;
+    scanf("%d", pos);
+
+    if (!pos || s->episodes == NULL) {
+        e->next = s->episodes;
+        s->episodes = e;
+        return;
+    }
+
+    Episode *tempEp = s->episodes;
+    for (int i = 0; i < pos - 1; i++) {
+        if (tempEp->next == NULL) {
+            break;
+        }
+        tempEp = tempEp->next;
+    }
+    e->next = tempEp->next;
+    tempEp->next = e;
 }
 
 
