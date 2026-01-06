@@ -12,7 +12,7 @@
 
 // Time format defined helpers
 #define T_F_NUM_PARTS 3
-#define T_F_NUM_SIZE 2
+#define T_F_NUM_PARTS_SIZE 2
 #define T_F_LENGTH 8
 
 typedef struct Episode {
@@ -130,32 +130,32 @@ int validLength(char *s) {
         return 0;
     }
     
-    // Copies s into a *temp
-    char *temp = NULL;
-    temp = (char*)nullCheck(temp, len*sizeof(char));
+    // Copies s into a temp
+    char *tempS = NULL;
+    tempS = (char*)nullCheck(tempS, len*sizeof(char) + sizeof(char));   
+    char *pointTempS = tempS; 
     for (int i = 0; i < len; i++) {
-        temp[i] = s[i];
+        tempS[i] = s[i];
     }
-    
-    int num;
-    temp = strtok(temp, ":");
-    num = atoi(temp);
-    if (0 > num && num > 99) {
+    tempS[len] = '\0';
+
+    tempS = strtok(tempS, ":");
+    int num = atoi(tempS);
+    if (num < 0 || num > 99 || strlen(tempS) != T_F_NUM_PARTS_SIZE) {
         return 0;
     }
 
-    temp = strtok(NULL, ":");
-    num = atoi(temp);
-    if (0 > num && num > 59) {
-        return 0;
+    for (int i = 1; i < T_F_NUM_PARTS; i++) {
+        tempS = strtok(NULL, ":");
+        num = atoi(tempS);
+        if (num < 0 || num > 59 || strlen(tempS) != T_F_NUM_PARTS_SIZE) {
+            return 0;
+        }
     }
 
-    temp = strtok(NULL, ":");
-    num = atoi(temp);
-    if (0 > num && num > 59) {
-        return 0;
+    if (tempS != NULL) {
+        free(pointTempS);
     }
-    
     return 1;
 }
 
@@ -464,6 +464,7 @@ void deleteShow() {
         for (int j = 0; j < dbSize; j++) {
             if (database[i][j] != NULL) {
                 if (!strcmp(database[i][j]->name, tempName)) {
+                    free(tempName);
                     freeShow(database[i][j]);
                     database[i][j] = NULL;
                     sortDB();
@@ -473,6 +474,7 @@ void deleteShow() {
             }
         }
     }
+    free(tempName);
     printf("Show not found.\n");
 }
 
