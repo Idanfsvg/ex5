@@ -36,8 +36,6 @@ int dbSize = 0;
 // Checks if alloc returned NULL
 void *nullCheck(void*, int);
 char *getString();
-int getInt();
-
 int validLength(char *s);
 
 void shrinkDB(int);
@@ -125,19 +123,7 @@ void *nullCheck(void *origin, int size) {
 }
 
 int validLength(char *s) {
-    int ascii;
-    for (int i = 0; i < EP_LENGTH; i++) {
-        ascii = s[i];
-        if (i%TIME_FORMAT == TIME_FORMAT - 1) {
-            if (!(s[i] == ":")) {
-                return 0;
-            }
-        }else if (i < TIME_FORMAT - 1) {
-            if ((s[i] - '0' )) {
-                /* code */
-            }
-        }
-    }
+    return 1;
 }
 
 
@@ -334,7 +320,6 @@ void addEpisode() {
     printf("Enter the name of the season:\n");
     temp = getString();
     Season *s = findSeason(show, temp);
-    free(temp);
 
     if (s == NULL) {
         printf ("Season not found.\n");
@@ -368,7 +353,7 @@ void addEpisode() {
 
     printf("Enter the position:\n");
     int pos;
-    scanf("%d", pos);
+    scanf("%d", &pos);
 
     if (!pos || s->episodes == NULL) {
         e->next = s->episodes;
@@ -527,7 +512,7 @@ void deleteEpisode() {
     if (s->episodes == e) {
         s->episodes = e->next;
     } else {
-        Season *temp = s->episodes;
+        Episode *temp = s->episodes;
         while (1) {
             if (temp->next == e) {
                 break;
