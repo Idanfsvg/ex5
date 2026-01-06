@@ -10,8 +10,10 @@
 #define FIRST_CELL 0
 #define UNINITIALIZED -1
 
-#define EP_LENGTH 8
-#define TIME_FORMAT 3
+// Time format defined helpers
+#define T_F_NUM_PARTS 3
+#define T_F_NUM_SIZE 2
+#define T_F_LENGTH 8
 
 typedef struct Episode {
     char *name;
@@ -123,6 +125,37 @@ void *nullCheck(void *origin, int size) {
 }
 
 int validLength(char *s) {
+    int len = strlen(s);
+    if (len != T_F_LENGTH) {
+        return 0;
+    }
+    
+    // Copies s into a *temp
+    char *temp = NULL;
+    temp = (char*)nullCheck(temp, len*sizeof(char));
+    for (int i = 0; i < len; i++) {
+        temp[i] = s[i];
+    }
+    
+    int num;
+    temp = strtok(temp, ":");
+    num = atoi(temp);
+    if (0 > num && num > 99) {
+        return 0;
+    }
+
+    temp = strtok(NULL, ":");
+    num = atoi(temp);
+    if (0 > num && num > 59) {
+        return 0;
+    }
+
+    temp = strtok(NULL, ":");
+    num = atoi(temp);
+    if (0 > num && num > 59) {
+        return 0;
+    }
+    
     return 1;
 }
 
@@ -349,7 +382,7 @@ void addEpisode() {
         printf("Invalid length, enter again:\n");
         temp = getString();
     }
-    free(temp);
+    e->length = temp;
 
     printf("Enter the position:\n");
     int pos;
