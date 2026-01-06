@@ -201,7 +201,6 @@ void mainMenu() {
 /*
         ---ADD FUNCS---                                     NOT TESTED
 */
-//WORKS
 void addShow() {
     // Part of the sorting algorithm
     int row, col = UNINITIALIZED;
@@ -249,7 +248,7 @@ void addShow() {
 
     //        SOMETHING NOT WORKING WITH STRCMP ON LINUX SERVER ONLY WHEN RUN WITH .TXT
 }
-//WORKS
+
 void insertShow(int row, int col, TVShow *choice) {
     for (int i = 0; i < dbSize; i++) {
         for (int j = 0; j < dbSize; j++) {
@@ -272,7 +271,7 @@ void insertShow(int row, int col, TVShow *choice) {
         }
     }
 }
-//WORKS
+
 void addSeason() {
     printf("Enter the name of the show:\n");
     char *tempName = getString();
@@ -391,7 +390,6 @@ void addEpisode() {
 /*
         ---FIND FUNCS---                                    NOT TESTED
 */
-//WORKS
 TVShow *findShow(char *name) {
     for (int i = 0; i < dbSize; i++) {
         for (int j = 0; j < dbSize; j++) {
@@ -402,7 +400,7 @@ TVShow *findShow(char *name) {
     }
     return NULL;
 }
-//WORKS
+
 Season *findSeason(TVShow *show, char *name) {
     if (show->seasons == NULL) {
         return NULL;
@@ -437,7 +435,6 @@ Episode *findEpisode(Season *season, char *name) {
 /*
         ---DELETE FUNCS---                                  NOT TESTED
 */
-//WORKS
 void deleteShow() {
     printf("Enter the name of the show:\n");
     char *tempName = getString();
@@ -797,7 +794,7 @@ void printShow() {
         s = s->next;
     }
 }
-//WORKS
+
 void printArray() {
     for (int i = 0; i < dbSize; i++) {
         for (int j = 0; j < dbSize; j++) {
