@@ -10,8 +10,10 @@
 #define FIRST_CELL 0
 #define UNINITIALIZED -1
 
-#define EP_LENGTH 8
-#define TIME_FORMAT 3
+// Time format defined helpers
+#define T_F_NUM_PARTS 3
+#define T_F_NUM_PARTS_SIZE 2
+#define T_F_LENGTH 8
 
 typedef struct Episode {
     char *name;
@@ -36,8 +38,6 @@ int dbSize = 0;
 // Checks if alloc returned NULL
 void *nullCheck(void*, int);
 char *getString();
-int getInt();
-
 int validLength(char *s);
 
 void shrinkDB(int);
@@ -125,19 +125,38 @@ void *nullCheck(void *origin, int size) {
 }
 
 int validLength(char *s) {
-    int ascii;
-    for (int i = 0; i < EP_LENGTH; i++) {
-        ascii = s[i];
-        if (i%TIME_FORMAT == TIME_FORMAT - 1) {
-            if (!(s[i] == ":")) {
-                return 0;
-            }
-        }else if (i < TIME_FORMAT - 1) {
-            if ((s[i] - '0' )) {
-                /* code */
-            }
+    int len = strlen(s);
+    if (len != T_F_LENGTH) {
+        return 0;
+    }
+    
+    // Copies s into a temp
+    char *tempS = NULL;
+    tempS = (char*)nullCheck(tempS, len*sizeof(char) + sizeof(char));   
+    char *pointTempS = tempS; 
+    for (int i = 0; i < len; i++) {
+        tempS[i] = s[i];
+    }
+    tempS[len] = '\0';
+
+    tempS = strtok(tempS, ":");
+    int num = atoi(tempS);
+    if (num < 0 || num > 99 || strlen(tempS) != T_F_NUM_PARTS_SIZE) {
+        return 0;
+    }
+
+    for (int i = 1; i < T_F_NUM_PARTS; i++) {
+        tempS = strtok(NULL, ":");
+        num = atoi(tempS);
+        if (num < 0 || num > 59 || strlen(tempS) != T_F_NUM_PARTS_SIZE) {
+            return 0;
         }
     }
+
+    if (tempS != NULL) {
+        free(pointTempS);
+    }
+    return 1;
 }
 
 
@@ -333,7 +352,6 @@ void addEpisode() {
     printf("Enter the name of the season:\n");
     temp = getString();
     Season *s = findSeason(show, temp);
-    free(temp);
 
     if (s == NULL) {
         printf ("Season not found.\n");
@@ -363,11 +381,11 @@ void addEpisode() {
         printf("Invalid length, enter again:\n");
         temp = getString();
     }
-    free(temp);
+    e->length = temp;
 
     printf("Enter the position:\n");
     int pos;
-    scanf("%d", pos);
+    scanf("%d", &pos);
 
     if (!pos || s->episodes == NULL) {
         e->next = s->episodes;
@@ -443,6 +461,7 @@ void deleteShow() {
         for (int j = 0; j < dbSize; j++) {
             if (database[i][j] != NULL) {
                 if (!strcmp(database[i][j]->name, tempName)) {
+                    free(tempName);
                     freeShow(database[i][j]);
                     database[i][j] = NULL;
                     sortDB();
@@ -452,6 +471,7 @@ void deleteShow() {
             }
         }
     }
+    free(tempName);
     printf("Show not found.\n");
 }
 
@@ -524,7 +544,7 @@ void deleteEpisode() {
     if (s->episodes == e) {
         s->episodes = e->next;
     } else {
-        Season *temp = s->episodes;
+        Episode *temp = s->episodes;
         while (1) {
             if (temp->next == e) {
                 break;
