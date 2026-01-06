@@ -91,7 +91,7 @@ int main() {
 }
 
 /*
-        ---MISC---                                              WORKS
+        ---MISC---
 */
 char *getString() {
     char ch = '\0';
@@ -218,7 +218,7 @@ void mainMenu() {
 
 
 /*
-        ---ADD FUNCS---                                     NOT TESTED
+        ---ADD FUNCS---
 */
 void addShow() {
     // Part of the sorting algorithm
@@ -406,7 +406,7 @@ void addEpisode() {
 
 
 /*
-        ---FIND FUNCS---                                    NOT TESTED
+        ---FIND FUNCS---
 */
 TVShow *findShow(char *name) {
     for (int i = 0; i < dbSize; i++) {
@@ -451,7 +451,7 @@ Episode *findEpisode(Season *season, char *name) {
 
 
 /*
-        ---DELETE FUNCS---                                  NOT TESTED
+        ---DELETE FUNCS---
 */
 void deleteShow() {
     printf("Enter the name of the show:\n");
@@ -558,7 +558,7 @@ void deleteEpisode() {
 
 
 /*
-        ---FREE FUNCS---                                    NOT TESTED
+        ---FREE FUNCS--
 */
 void freeAll() {
     if (database == NULL) {
@@ -623,7 +623,7 @@ void freeEpisode(Episode *e) {
 
 
 /*
-        ---EXPAND AND SHRINK FUNCS---                           WORKS
+        ---EXPAND AND SHRINK FUNCS---
 */
 void expandDB() {
     if (database == NULL) {
@@ -697,7 +697,7 @@ void shrinkDB(int lim) {
 
 
 /*
-        ---SORT AND COUNT FUNCS---                              WORKS
+        ---SORT AND COUNT FUNCS---
 */
 void sortDB() {
     if (!isDBSorted()) {
@@ -755,7 +755,7 @@ int countShows() {
 
 
 /*
-        ---PRINT FUNCS---                                   NOT TESTED
+        ---PRINT FUNCS---
 */
 void printEpisode() {
     printf("Enter the name of the show:\n");
